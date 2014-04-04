@@ -21,10 +21,10 @@ mvn archetype:generate \
 2. 调整日志输出
 $ cd ${SERVICEMIX_HOME}/etc/org.ops4j.pax.logging.cfg
 添加 sift
-# Root logger
+Root logger
 log4j.rootLogger=INFO, out, osgi:VmLogAppender, sift
 并注释掉
-#log4j.appender.sift.default=servicemix
+log4j.appender.sift.default=servicemix
 
 3. 安装 jms 组件
 这个错误怎么回事
