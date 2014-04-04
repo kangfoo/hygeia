@@ -40,3 +40,5 @@ RESPONSE:
         $ MAVEN_OPTS="-Xmx512m -XX:MaxPermSize=128m -Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=5005"
         $ export MAVEN_OPTS
         $ mvn jetty:run
+
+4. 在开发的时候为了方便，可以将 target 目录添加 source 编译文件夹类型。
