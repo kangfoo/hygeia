@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+    <parent>
+        <artifactId>hygeia</artifactId>
+        <groupId>com.kangfoo.study.hygeia</groupId>
+        <version>1.0-SNAPSHOT</version>
+    </parent>
+    <modelVersion>4.0.0</modelVersion>
+
+    <artifactId>datadump</artifactId>
+    <packaging>pom</packaging>
+    <name>Study :: Hygeia :: DataDump</name>
+    <modules>
+        <module>pm25in.import2local</module>
+        <module>weather.import2local</module>
+    </modules>
+
+</project>
