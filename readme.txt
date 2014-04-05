@@ -1,8 +1,8 @@
 开发过程纪要：
 
-1. 使用 maven commnad 建立 Create an OSGi blueprint bundle (karaf-blueprint-archetype) 类型的项目
+1. 使用 maven commnad 建立 Create an OSGi blueprint bundle
+karaf-blueprint-archetype 类型的项目
 命令如下：
-
 mvn archetype:generate \
     -DarchetypeGroupId=org.apache.karaf.archetypes \
     -DarchetypeArtifactId=karaf-blueprint-archetype \
@@ -11,6 +11,18 @@ mvn archetype:generate \
     -DartifactId=pm25in.import2local \
     -Dversion=1.0-SNAPSHOT \
     -Dpackage=com.kangfoo.study.pm25.import2local
+
+camel-archetype-blueprint 类型的项目(这个更适合我)。可参阅于：
+http://camel.apache.org/camel-maven-archetypes.html
+命令如下：
+mvn archetype:generate \
+    -DarchetypeGroupId=org.apache.camel.archetypes \
+    -DarchetypeArtifactId=camel-archetype-blueprint \
+    -DarchetypeVersion=2.12.3 \
+    -DgroupId=com.kangfoo.study.hygeia \
+    -DartifactId=pm25in.import2local.getpm25data.test \
+    -Dversion=1.0-SNAPSHOT \
+    -Dpackage=com.kangfoo.study.hygeia.pm25.import2local.getpm25data.test
 
 
 2. 调整日志输出
@@ -51,4 +63,11 @@ at java.io.PipedInputStream.receive(PipedInputStream.java:202)[:1.7.0_45]
 karaf@root> features:install camel-http
 
 
-7.
+7. 开发过程中关于 blueprint 示例可参考
+http://www.ibm.com/developerworks/cn/opensource/os-osgiblueprint/
+
+8. 无意中谷歌到的一个关于OSGi, SOA, Camel, Blueprint 全面的中文博客
+http://thinkinside.tk/pages/tags.html#OSGi-ref
+
+9. HTML字符实体（Character Entities），转义字符串（Escape Sequence）
+http://114.xixik.com/character/

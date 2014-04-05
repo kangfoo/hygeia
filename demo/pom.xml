@@ -11,8 +11,9 @@
     <artifactId>demo</artifactId>
 
 
-  <modules>
-    <module>camel-example-reportincident</module>
-      <module>osgi-in-action</module>
+    <modules>
+        <module>camel-example-reportincident</module>
+        <module>osgi-in-action</module>
+    <module>test</module>
   </modules>
 </project>

@@ -15,32 +15,26 @@
     <name>camel-example-reportincident Maven Webapp</name>
     <url>http://maven.apache.org</url>
 
-    <properties>
-        <!--<cxf-version>2.6.1</cxf-version>-->
-        <cxf-version>2.7.10</cxf-version>
-        <camel-version>2.12.3</camel-version>
-    </properties>
-
     <dependencies>
         <dependency>
             <groupId>org.apache.cxf</groupId>
             <artifactId>cxf-rt-core</artifactId>
-            <version>${cxf-version}</version>
+            <version>${cxf.version}</version>
         </dependency>
         <dependency>
             <groupId>org.apache.cxf</groupId>
             <artifactId>cxf-rt-frontend-jaxws</artifactId>
-            <version>${cxf-version}</version>
+            <version>${cxf.version}</version>
         </dependency>
         <dependency>
             <groupId>org.apache.cxf</groupId>
             <artifactId>cxf-rt-transports-http</artifactId>
-            <version>${cxf-version}</version>
+            <version>${cxf.version}</version>
         </dependency>
         <dependency>
             <groupId>org.apache.cxf</groupId>
             <artifactId>cxf-rt-transports-http-jetty</artifactId>
-            <version>${cxf-version}</version>
+            <version>${cxf.version}</version>
             <scope>test</scope>
         </dependency>
 
@@ -71,46 +65,46 @@
         <!--<dependency>-->
             <!--<groupId>org.apache.camel</groupId>-->
             <!--<artifactId>camel-core</artifactId>-->
-            <!--<version>${camel-version}</version>-->
+            <!--<version>${camel.version}</version>-->
         <!--</dependency>-->
         <!-- 测试 ref: https://camel.apache.org/how-do-i-reuse-the-contexttestsupport-class-in-my-unit-tests.html-->
         <dependency>
             <groupId>org.apache.camel</groupId>
             <artifactId>camel-core</artifactId>
-            <version>${camel-version}</version>
+            <version>${camel.version}</version>
             <type>test-jar</type>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.apache.camel</groupId>
             <artifactId>camel-velocity</artifactId>
-            <version>${camel-version}</version>
+            <version>${camel.version}</version>
         </dependency>
         <dependency>
             <groupId>org.apache.camel</groupId>
             <artifactId>camel-spring</artifactId>
-            <version>${camel-version}</version>
+            <version>${camel.version}</version>
         </dependency>
         <!-- 发邮件需要，否则报错是没有日志的。只能调试查看。 -->
         <dependency>
             <groupId>org.apache.camel</groupId>
             <artifactId>camel-mail</artifactId>
-            <version>${camel-version}</version>
+            <version>${camel.version}</version>
         </dependency>
         <dependency>
             <groupId>org.apache.camel</groupId>
             <artifactId>camel-test</artifactId>
-            <version>${camel-version}</version>
+            <version>${camel.version}</version>
         </dependency>
         <dependency>
             <groupId>org.apache.camel</groupId>
             <artifactId>camel-ognl</artifactId>
-            <version>${camel-version}</version>
+            <version>${camel.version}</version>
         </dependency>
         <dependency>
             <groupId>org.apache.camel</groupId>
             <artifactId>camel-cxf</artifactId>
-            <version>${camel-version}</version>
+            <version>${camel.version}</version>
         </dependency>
 
         <!-- mock mail server so we do not send an email for real -->
@@ -146,7 +140,7 @@
             <plugin>
                 <groupId>org.apache.cxf</groupId>
                 <artifactId>cxf-codegen-plugin</artifactId>
-                <version>${cxf-version}</version>
+                <version>${cxf.version}</version>
                 <executions>
                     <execution>
                         <id>generate-sources</id>
