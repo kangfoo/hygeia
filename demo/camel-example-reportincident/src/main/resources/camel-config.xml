@@ -9,9 +9,9 @@
     <!-- 1. java coding -->
 
     <!-- 2. using spring bean -->
-    <bean id="reportIncidentPart5Routes" class="org.apache.camel.example.reportincident.part5.ReportIncidentPart5Routes"/>
-    <camelContext id="camel" xmlns="http://activemq.apache.org/camel/schema/spring">
-        <routeBuilderRef ref="reportIncidentPart5Routes"/>
+    <bean id="reportIncidentPart6Routes" class="org.apache.camel.example.reportincident.ReportIncidentPart6Routes"/>
+    <camelContext xmlns="http://camel.apache.org/schema/spring">
+        <routeBuilder ref="reportIncidentPart6Routes" />
     </camelContext>
 
     <!-- 3. package scanning -->

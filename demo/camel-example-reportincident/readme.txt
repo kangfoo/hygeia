@@ -1,6 +1,7 @@
 1. 请参阅
 https://camel.apache.org/tutorial-example-reportincident.html
 
+
 2. cxf webservice
 http://localhost:9080/webservices/incident?wsdl
 
@@ -33,6 +34,7 @@ RESPONSE:
    </soap:Body>
 </soap:Envelope>
 
+
 3. 调试
     a. 一般的测试用例
         $ mvn clean install -Dmaven.surefire.debug
@@ -41,4 +43,15 @@ RESPONSE:
         $ export MAVEN_OPTS
         $ mvn jetty:run
 
-4. 在开发的时候为了方便，可以将 target 目录添加 source 编译文件夹类型。
+
+4. 在开发的时候为了方便，可以将 target 目录添加为 source 编译文件夹类型。
+
+
+5.错误
+The given SOAPAction http://reportincident.example.camel.apache.org/ReportIncident does not match an operation.
+
+-->
+http://stackoverflow.com/questions/22821423/apache-cxf-and-apache-camel-the-given-soapaction-does-not-match-an-operation
+
+我为提交上去的回帖（2014年04月05日01:25:02）：
+Thanks for Willem Jiang。 I got the same issue. Adding the code  <i> factory.setWSDLURL("reportIncident.wsdl"); </i> I solved it .

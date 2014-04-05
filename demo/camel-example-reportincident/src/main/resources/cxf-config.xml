@@ -27,18 +27,17 @@
     <import resource="classpath:META-INF/cxf/cxf-extension-soap.xml"/>
     <import resource="classpath:META-INF/cxf/cxf-servlet.xml"/>
 
-    <!-- implementation of the webservice -->
-    <bean id="reportIncidentEndpoint" class="org.apache.camel.example.reportincident.part5.ReportIncidentPart5EndpointImpl">
-        <property name="context" ref="camel" />
-    </bean>
+    <!--&lt;!&ndash; implementation of the webservice &ndash;&gt;-->
+    <!--<bean id="reportIncidentEndpoint" class="org.apache.camel.example.reportincident.ReportIncidentPart4EndpointImpl">-->
+    <!--</bean>-->
 
-    <!-- export the webservice using jaxws -->
-    <jaxws:endpoint id="reportIncident"
-                    implementor="#reportIncidentEndpoint"
-                    address="/incident"
-                    wsdlLocation="/WEB-INF/wsdl/report_incident.wsdl"
-                    endpointName="s:ReportIncidentPort"
-                    serviceName="s:ReportIncidentService"
-                    xmlns:s="http://reportincident.example.camel.apache.org"/>
+    <!--&lt;!&ndash; export the webservice using jaxws &ndash;&gt;-->
+    <!--<jaxws:endpoint id="reportIncident"-->
+                    <!--implementor="#reportIncidentEndpoint"-->
+                    <!--address="/incident"-->
+                    <!--wsdlLocation="/WEB-INF/wsdl/report_incident.wsdl"-->
+                    <!--endpointName="s:ReportIncidentPort"-->
+                    <!--serviceName="s:ReportIncidentService"-->
+                    <!--xmlns:s="http://reportincident.example.camel.apache.org"/>-->
 
 </beans>
