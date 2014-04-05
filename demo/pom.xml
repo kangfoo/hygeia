@@ -13,5 +13,6 @@
 
   <modules>
     <module>camel-example-reportincident</module>
+      <module>osgi-in-action</module>
   </modules>
 </project>

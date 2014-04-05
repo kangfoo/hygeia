@@ -1,0 +1,27 @@
+<?xml version="1.0"?>
+<project name="stockprovider-server" default="dist">
+
+  <property file="build.properties"/>
+  <import file="../build.xml"/>
+
+  <target name="compile" depends="common.compile"/>
+
+  <target name="init" depends="gwt.app">
+    <copy todir="${dist}">
+      <fileset dir="${root.dir}/chapter15/gwtapp/bundles" includes="gwtapp.stockprovider-*.jar"/>
+      <fileset dir="${lib}/apache-cxf-dosgi/dosgi_bundles" includes="*.jar"/>
+    </copy>
+  </target>
+
+  <target name="local.dist" depends="init,common.local.dist,launcher,shell">
+    <copy file="${launcher.jar}" todir="${example.dir}"/>
+    <copy todir="${dist}">
+      <path refid="shell.tty"/>
+    </copy>
+  </target>
+
+  <target name="local.clean" depends="common.local.clean">
+    <delete file="${example.dir}/launcher.jar"/>
+  </target>
+
+</project>
