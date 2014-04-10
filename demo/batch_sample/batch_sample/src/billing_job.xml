@@ -1,0 +1,189 @@
+<beans:beans xmlns="http://www.springframework.org/schema/batch"
+	xmlns:beans="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="
+	http://www.springframework.org/schema/beans
+	http://www.springframework.org/schema/beans/spring-beans-2.0.xsd
+	http://www.springframework.org/schema/batch
+	http://www.springframework.org/schema/batch/spring-batch-2.1.xsd">
+	<job id="billingJob" restartable="true">
+		<step id="billingStep" next="payStep">
+			<tasklet>
+				<chunk reader="userDbReader" processor="billingProcessor"
+					writer="billDbWriter" commit-interval="5" chunk-completion-policy="">
+				</chunk>
+			</tasklet>
+		</step>
+		<step id="payStep">
+			<tasklet>
+				<chunk reader="billDbReader" processor="payProcessor" writer="payDbWriter"
+					commit-interval="5" chunk-completion-policy="" skip-limit="100">
+					<skippable-exception-classes>
+						<include
+							class="org.springframework.batch.sample.MoneyNotEnoughException" />
+					</skippable-exception-classes>
+				</chunk>
+			</tasklet>
+			<next on="COMPLETED WITH SKIPS" to="messageStep"/>
+			<listeners>
+				<listener ref="payStepCheckingListener"></listener>
+			</listeners>
+		</step>
+		<step id="messageStep">
+			<tasklet>
+				<chunk reader="billArrearsDbReader" processor="messageProcessor"
+					writer="messageDbWriter" commit-interval="5"
+					chunk-completion-policy="">
+				</chunk>
+			</tasklet>
+		</step>
+	</job>
+
+	<beans:bean id="payStepCheckingListener"
+		class="org.springframework.batch.sample.PayStepCheckingListener">
+	</beans:bean>
+
+	<beans:bean id="dataSource"
+		class="org.springframework.jdbc.datasource.DriverManagerDataSource">
+		<beans:property name="driverClassName" value="com.mysql.jdbc.Driver" />
+		<beans:property name="url"
+			value="jdbc:mysql://localhost:3306/batch" />
+		<beans:property name="username" value="root" />
+		<beans:property name="password" value="root" />
+	</beans:bean>
+
+	<beans:bean id="transactionManager"
+		class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+		<beans:property name="dataSource" ref="dataSource" />
+	</beans:bean>
+
+	<beans:bean id="jobRepository"
+		class="org.springframework.batch.core.repository.support.JobRepositoryFactoryBean">
+		<beans:property name="dataSource" ref="dataSource" />
+		<beans:property name="transactionManager" ref="transactionManager" />
+	</beans:bean>
+
+	<!-- processors -->
+
+	<beans:bean id="billingProcessor"
+		class="org.springframework.batch.sample.BillingItemProcessor"></beans:bean>
+
+	<beans:bean id="payProcessor"
+		class="org.springframework.batch.sample.PaymentItemProcessor"></beans:bean>
+
+	<beans:bean id="messageProcessor"
+		class="org.springframework.batch.sample.ArrearsMessagesItemProcessor"></beans:bean>
+
+	<!-- readers -->
+	<beans:bean id="userDbReader"
+		class="org.springframework.batch.item.database.JdbcPagingItemReader">
+		<beans:property name="dataSource" ref="dataSource" />
+		<beans:property name="rowMapper" ref="userDbMapper" />
+		<beans:property name="queryProvider" ref="userQueryProvider" />
+	</beans:bean>
+
+	<beans:bean id="userDbMapper"
+		class="org.springframework.batch.sample.UserDbMapper" />
+
+	<beans:bean id="userQueryProvider"
+		class="org.springframework.batch.item.database.support.MySqlPagingQueryProvider">
+		<beans:property name="selectClause" value="u.id,u.name,u.age,u.balance" />
+		<beans:property name="fromClause" value="users u" />
+		<beans:property name="sortKey" value="u.id" />
+	</beans:bean>
+
+	<beans:bean id="billDbReader"
+		class="org.springframework.batch.item.database.JdbcPagingItemReader">
+		<beans:property name="dataSource" ref="dataSource" />
+		<beans:property name="rowMapper" ref="billDbMapper" />
+		<beans:property name="queryProvider" ref="billQueryProvider" />
+	</beans:bean>
+
+	<beans:bean id="billDbMapper"
+		class="org.springframework.batch.sample.BillDbMapper" />
+
+	<beans:bean id="billQueryProvider"
+		class="org.springframework.batch.item.database.support.MySqlPagingQueryProvider">
+		<beans:property name="selectClause"
+			value="b.id,b.user_id,b.fees,b.paid_fees,b.unpaid_fees,b.pay_status,u.name,u.age,u.balance" />
+		<beans:property name="fromClause" value="users u,bills b" />
+		<beans:property name="whereClause" value="b.user_id=u.id" />
+		<beans:property name="sortKey" value="b.id" />
+	</beans:bean>
+
+	<beans:bean id="billArrearsDbReader"
+		class="org.springframework.batch.item.database.JdbcPagingItemReader">
+		<beans:property name="dataSource" ref="dataSource" />
+		<beans:property name="rowMapper" ref="billDbMapper" />
+		<beans:property name="queryProvider" ref="billArrearsQueryProvider" />
+	</beans:bean>
+
+	<beans:bean id="billArrearsQueryProvider"
+		class="org.springframework.batch.item.database.support.MySqlPagingQueryProvider">
+		<beans:property name="selectClause"
+			value="b.id,b.user_id,b.fees,b.paid_fees,b.unpaid_fees,b.pay_status,u.name,u.age,u.balance" />
+		<beans:property name="fromClause" value="users u,bills b" />
+		<beans:property name="whereClause"
+			value="b.user_id=u.id and b.pay_status=0" />
+		<beans:property name="sortKey" value="b.id" />
+	</beans:bean>
+
+	<!-- writers -->
+	<beans:bean id="messageDbWriter"
+		class="org.springframework.batch.item.database.JdbcBatchItemWriter">
+		<beans:property name="dataSource" ref="dataSource" />
+		<beans:property name="sql"
+			value="insert into messages(id,user_id,content) values(:id,:user.id,:content)" />
+		<beans:property name="itemSqlParameterSourceProvider"
+			ref="itemSqlParameterSourceProvider" />
+	</beans:bean>
+
+	<beans:bean id="billDbWriter"
+		class="org.springframework.batch.item.database.JdbcBatchItemWriter">
+		<beans:property name="dataSource" ref="dataSource" />
+		<beans:property name="sql"
+			value="insert into bills(id,user_id,fees,paid_fees,unpaid_fees,pay_status) values(:id,:user.id,:fees,:paidFees,:unpaidFees,:payStatus)" />
+		<beans:property name="itemSqlParameterSourceProvider"
+			ref="itemSqlParameterSourceProvider" />
+	</beans:bean>
+
+	<beans:bean id="payDbWriter"
+		class="org.springframework.batch.item.support.CompositeItemWriter">
+		<beans:property name="delegates">
+			<beans:list>
+				<beans:ref bean="payRecordDbWriter" />
+				<beans:ref bean="payBillsDbUpdateWriter" />
+				<beans:ref bean="payUsersDbUpdateWriter" />
+			</beans:list>
+		</beans:property>
+	</beans:bean>
+
+	<beans:bean id="payBillsDbUpdateWriter"
+		class="org.springframework.batch.item.database.JdbcBatchItemWriter">
+		<beans:property name="dataSource" ref="dataSource" />
+		<beans:property name="sql"
+			value="update bills b set b.paid_fees=:bill.paidFees,b.unpaid_fees=:bill.unpaidFees,b.pay_status=:bill.payStatus where b.id=:bill.id" />
+		<beans:property name="itemSqlParameterSourceProvider"
+			ref="itemSqlParameterSourceProvider" />
+	</beans:bean>
+
+	<beans:bean id="payUsersDbUpdateWriter"
+		class="org.springframework.batch.item.database.JdbcBatchItemWriter">
+		<beans:property name="dataSource" ref="dataSource" />
+		<beans:property name="sql"
+			value="update users u set u.balance=:bill.user.balance where u.id=:bill.user.id" />
+		<beans:property name="itemSqlParameterSourceProvider"
+			ref="itemSqlParameterSourceProvider" />
+	</beans:bean>
+
+	<beans:bean id="payRecordDbWriter"
+		class="org.springframework.batch.item.database.JdbcBatchItemWriter">
+		<beans:property name="dataSource" ref="dataSource" />
+		<beans:property name="sql"
+			value="insert into payrecords(id,bill_id,paid_fees) values(:id,:bill.id,:paidFees)" />
+		<beans:property name="itemSqlParameterSourceProvider"
+			ref="itemSqlParameterSourceProvider" />
+	</beans:bean>
+
+	<beans:bean id="itemSqlParameterSourceProvider"
+		class="org.springframework.batch.item.database.BeanPropertyItemSqlParameterSourceProvider" />
+</beans:beans>

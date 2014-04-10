@@ -14,6 +14,10 @@
     <modules>
         <module>camel-example-reportincident</module>
         <module>osgi-in-action</module>
-    <module>test</module>
+        <module>test</module>
+        <module>maven-springbatch-archetype</module>
+
+    <module>springbatch.test</module>
+    <module>SpringBatchExample</module>
   </modules>
 </project>

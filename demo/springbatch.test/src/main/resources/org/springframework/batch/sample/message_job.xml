@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<beans:beans
+        xmlns:beans="http://www.springframework.org/schema/beans"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns:batch="http://www.springframework.org/schema/batch"
+        xsi:schemaLocation="
+        http://www.springframework.org/schema/batch http://www.springframework.org/schema/batch/spring-batch.xsd
+        http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+    <!-- 0. 准备 pojo -->
+    <!-- 定义 org.springframework.batch.sample.User , org.springframework.batch.sample.Message -->
+
+    <!-- 1. 读过程。-->
+    <!-- 1.1 配置 messageReader -->
+    <beans:bean id="messageReader" class="org.springframework.batch.item.file.FlatFileItemReader">
+        <beans:property name="lineMapper" ref="lineMapper" />
+        <beans:property name="resource" value="classpath:/users.txt" />
+    </beans:bean>
+
+    <!-- 1.2 将数据文件中的一行与一个POJO实例一一映射。
+       DefaultLineMapper 负责通过lineTokenizer将文件数据行以特定的限定符（此处是“，”）进行拆分，
+
+        需要设置
+    	private LineTokenizer tokenizer;
+    	private FieldSetMapper<T> fieldSetMapper;
+        两个属性。
+
+       lineMapper 首先通过 lineTokenizer 完成文件行拆分，并封装为一个属性结果集，因为我们使用“,”分隔用户属性，
+        所以需要将 lineTokenizer 设置为 DelimitedLineTokenizer。最后通过 fieldSetMapper 完成将结果集封装为一个 POJO 对象。
+    -->
+    <beans:bean id="lineMapper" class="org.springframework.batch.item.file.mapping.DefaultLineMapper">
+        <beans:property name="lineTokenizer">
+            <beans:bean class="org.springframework.batch.item.file.transform.DelimitedLineTokenizer" />
+        </beans:property>
+        <beans:property name="fieldSetMapper">
+            <beans:bean class="org.springframework.batch.sample.UserMapper"/> <!-- fieldSetMapper, 像游标一样一一映射 -->
+        </beans:property>
+    </beans:bean>
+
+    <!-- 2. 业务处理。MessagesItemProcessor -->
+    <beans:bean id="messageProcessor"
+                class="org.springframework.batch.sample.MessagesItemProcessor"/>
+
+    <!-- 3. 写过程。MessagesItemWriter -->
+    <beans:bean id="messageWriter"
+                class="org.springframework.batch.sample.MessagesItemWriter"/>
+
+    <!-- 4. 任务定义 -->
+    <!-- 4.1 配置 job。 messageJob 包含一个 Step。它需要指定读数据、处理数据、写数据。
+        commit-interval 指定该 step 的事务提交粒度，此处设置为 5 表示每当处理完5读入5条数据时，提交一次事务。
+        chunk-completion-policy 指定了 step 的完成策略，即当什么情况发生时表明该 step 已经完成。不指定使用默认当读入数据为空结束当前 step 的策略。
+    -->
+    <batch:job id="messageJob">
+        <batch:step id="messageStep">
+            <batch:tasklet>
+                <batch:chunk reader="messageReader" processor="messageProcessor" writer="messageWriter" commit-interval="5"  /> <!-- chunk-completion-policy="" -->
+            </batch:tasklet>
+        </batch:step>
+    </batch:job>
+
+    <!-- 5. 配置 JobRepository 并为其指定一个事务管理器，该类用于对 Job 进行管理 -->
+    <beans:bean id="jobRepository" class="org.springframework.batch.core.repository.support.MapJobRepositoryFactoryBean">
+        <beans:property name="transactionManager" ref="transactionManager" />
+    </beans:bean>
+    <beans:bean id="transactionManager" class="org.springframework.batch.support.transaction.ResourcelessTransactionManager"/>
+
+    <!-- 6. 执行。 请参见 Main.class -->
+
+    <!-- 7.  -->
+
+</beans:beans>
