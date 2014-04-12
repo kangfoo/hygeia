@@ -23,29 +23,28 @@ import java.io.File;
  */
 public class AQIRankingImport2FileBuilder extends RouteBuilder {
 
-    private String pm25Token  ;  // 测试数据有次数限制
+    private String pm25Token;  // 测试数据有次数限制
 
-    private String httpURL  ;
-    private String flag ; //当前 bundle 的简称标识符。
-    private String quartz2  ;
+    private String httpURL;
+    private String flag; //当前 bundle 的简称标识符。
+    private String quartz2;
     private FileNameGenerator fileNameGenerator;
 
     @Override
     public void configure() throws Exception {
 
         from(quartz2)
-             .setHeader(Exchange.HTTP_METHOD, constant(HttpMethods.GET))
-             .to(getURL()) // http4
-             .convertBodyTo(String.class)  // 字节流转 string 要优化。
-             .setHeader(Exchange.FILE_NAME, SimpleBuilder.simple(fileNameGenerator.generateFileName(flag)))
-             .to("file://target/" + File.separator + flag + File.separator + fileNameGenerator.generateDirNameByTime())
+                .setHeader(Exchange.HTTP_METHOD, constant(HttpMethods.GET))
+                .setHeader(Exchange.HTTP_QUERY, constant(constant("token="+pm25Token+"&city=zhuhai")))
+                .to(this.getHttpURL()) // http4
+                .convertBodyTo(String.class)  // 字节流转 string 要优化。
+                .setHeader(Exchange.FILE_NAME, SimpleBuilder.simple(fileNameGenerator.generateFileName(flag)))
+                .log("获取API")
+                .to("file://target/" + File.separator + flag + File.separator + fileNameGenerator.generateDirNameByTime())
         ;
+
     }
 
-
-    private String getURL(){
-        return String.format(httpURL, pm25Token);
-    }
 
     public String getPm25Token() {
         return pm25Token;

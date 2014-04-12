@@ -1,40 +1,37 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <blueprint xmlns="http://www.osgi.org/xmlns/blueprint/v1.0.0"
            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xmlns:cm="http://aries.apache.org/blueprint/xmlns/blueprint-cm/v1.0.0"
            xmlns:camel="http://camel.apache.org/schema/blueprint"
            xsi:schemaLocation="
        http://www.osgi.org/xmlns/blueprint/v1.0.0 http://www.osgi.org/xmlns/blueprint/v1.0.0/blueprint.xsd
        http://camel.apache.org/schema/blueprint http://camel.apache.org/schema/blueprint/camel-blueprint.xsd">
 
-    <!-- 测试时使用 blueprint Configuration Admin 加载不到值的。故最好在类代码中同样附上初始值。-->
-    <!--使用 camel:propertyPlaceholder 代替 configuration admin 管理。
+    <!-- 参见 http://camel.apache.org/properties.html
+         测试时使用 blueprint Configuration Admin 加载不到值的。故最好附上初始值。-->
+
+    <!--使用  configuration admin 管理。 blueprint 属性读取使用 ${property.key} 语法， camel 属性读取使用 {{property.key}} 语法-->
     <cm:property-placeholder persistent-id="com.kangfoo.study.hygeia">
         <cm:default-properties>
-            <cm:property name="common.pm25Token" value="5j1znBVAsnSf5xQyNQyq"/>
-            <cm:property name="AQIRankingImport2File.httpURL" value="http4://www.pm25.in/api/querys/pm2_5.json?city=zhuhai&amp;token=%s" />
+            <cm:property name="common.pm25Token" value="2joZFDGbn7B8RN9KdZah"/>
+            <cm:property name="AQIRankingImport2File.httpURL" value="http4://www.pm25.in/api/querys/aqi_ranking.json" />
             <cm:property name="AQIRankingImport2File.flag" value="aqi" />
-            <cm:property name="AQIRankingImport2File.quartz2" value="quartz2://PM2.5_groupName/timerName?cron=0/5+*+*+?+*+*" />
+            <cm:property name="AQIRankingImport2File.quartz2" value="quartz2://PM2.5_groupName/timerName?cron=0/6+*+*+?+*+*" />
         </cm:default-properties>
     </cm:property-placeholder>
-    -->
 
-    <!-- org.osgi.service.blueprint.container.ComponentDefinitionException: Unable to initialize bean .camelBlueprint.factory.blueprintContext -->
     <reference id="filenameGenerator" interface="com.kangfoo.study.hygeia.utils.common.FileNameGenerator" />
-    <!--<bean id="filenameGenerator" class="com.kangfoo.study.hygeia.utils.common.impl.FileNameGeneratorImpl"/>-->
 
     <bean id="aqiRankingImport2FileBuilder"
           class="com.kangfoo.study.hygeia.pm25.import2local.aqiranking.AQIRankingImport2FileBuilder">
-        <property name="pm25Token" value="5j1znBVAsnSf5xQyNQyq"/>
-        <!--<property name="httpURL" value="http4://www.pm25.in/api/querys/pm2_5.json?city=zhuhai&amp;token=%s"/>-->
-        <property name="httpURL" value="http4://www.baidu.com?token=%s"/>
-        <property name="flag" value="aqi"/>
-        <!--<property name="quartz2" value="quartz2://PM2.5_groupName/timerName?cron=0/5+*+*+?+*+*"/>-->
-        <property name="quartz2" value="quartz://PM2.5_groupName/timerName?cron=0/5+*+*+?+*+*"/>
+        <property name="pm25Token" value="${common.pm25Token}"/>
+        <property name="httpURL" value="${AQIRankingImport2File.httpURL}"/>
+        <property name="flag" value="${AQIRankingImport2File.flag}"/>
+        <property name="quartz2" value="${AQIRankingImport2File.quartz2}"/>
         <property name="fileNameGenerator" ref="filenameGenerator"/>
    </bean>
 
     <camelContext id="blueprintContext" trace="false" xmlns="http://camel.apache.org/schema/blueprint">
-        <!--<camel:propertyPlaceholder id="properties" location="classpath:default_settings.properties"/>-->
         <routeBuilder ref="aqiRankingImport2FileBuilder"/>
     </camelContext>
 

@@ -20,7 +20,7 @@ public class AQIRankingImport2FileBuilderTest extends CamelBlueprintTestSupport 
     @Test
     public void testRoute() throws Exception {
         // do nothing
-        Thread.sleep(1000 * 1000);
+        Thread.sleep(10 * 1000);
     }
 
 }
