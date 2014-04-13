@@ -13,10 +13,10 @@
     <!--使用  configuration admin 管理。 blueprint 属性读取使用 ${property.key} 语法， camel 属性读取使用 {{property.key}} 语法-->
     <cm:property-placeholder persistent-id="com.kangfoo.study.hygeia">
         <cm:default-properties>
-            <cm:property name="common.pm25Token" value="2joZFDGbn7B8RN9KdZah"/>
+            <cm:property name="common.pm25Token" value="token=5j1znBVAsnSf5xQyNQyq"/>
             <cm:property name="AQIRankingImport2File.httpURL" value="http4://www.pm25.in/api/querys/aqi_ranking.json" />
             <cm:property name="AQIRankingImport2File.flag" value="aqi" />
-            <cm:property name="AQIRankingImport2File.quartz2" value="quartz2://PM2.5_groupName/timerName?cron=0/6+*+*+?+*+*" />
+            <cm:property name="AQIRankingImport2File.quartz2" value="quartz2://aqiRanking_groupName/timerName?cron=0/6+*+*+?+*+*" />
         </cm:default-properties>
     </cm:property-placeholder>
 

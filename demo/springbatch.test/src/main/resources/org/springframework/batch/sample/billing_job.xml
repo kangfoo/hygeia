@@ -1,0 +1,311 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans:beans
+        xmlns:beans="http://www.springframework.org/schema/beans"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns:batch="http://www.springframework.org/schema/batch"
+        xsi:schemaLocation="
+        http://www.springframework.org/schema/batch http://www.springframework.org/schema/batch/spring-batch.xsd
+        http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+    <!-- 此文件在 message_job.xml 文件基础之上修改。 -->
+
+    <!-- 0. 准备 pojo -->
+    <!-- 定义 org.springframework.batch.sample.User , org.springframework.batch.sample.Message -->
+
+    <!-- 1. 读过程。-->
+    <!-- 1.1 配置 messageReader -->
+    <beans:bean id="messageReader" class="org.springframework.batch.item.file.FlatFileItemReader">
+        <beans:property name="lineMapper" ref="lineMapper" />
+        <beans:property name="resource" value="classpath:/users.txt" />
+    </beans:bean>
+
+    <!-- 1.2 将数据文件中的一行与一个POJO实例一一映射。
+       DefaultLineMapper 负责通过lineTokenizer将文件数据行以特定的限定符（此处是“，”）进行拆分，
+
+        需要设置
+    	private LineTokenizer tokenizer;
+    	private FieldSetMapper<T> fieldSetMapper;
+        两个属性。
+
+       lineMapper 首先通过 lineTokenizer 完成文件行拆分，并封装为一个属性结果集，因为我们使用“,”分隔用户属性，
+        所以需要将 lineTokenizer 设置为 DelimitedLineTokenizer。最后通过 fieldSetMapper 完成将结果集封装为一个 POJO 对象。
+    -->
+    <!--  设置限定符
+    <beans:bean id="tokenizer" class="org.springframework.batch.item.file.transform.DelimitedLineTokenizer">
+        <beans:property name="delimiter" value="|"/>
+    </beans:bean>
+    -->
+    <beans:bean id="lineMapper" class="org.springframework.batch.item.file.mapping.DefaultLineMapper">
+        <beans:property name="lineTokenizer">
+            <beans:bean class="org.springframework.batch.item.file.transform.DelimitedLineTokenizer" />
+        </beans:property>
+        <beans:property name="fieldSetMapper">
+            <beans:bean class="org.springframework.batch.sample.UserMapper"/> <!-- fieldSetMapper, 像游标一样一一映射 -->
+        </beans:property>
+    </beans:bean>
+
+    <!-- 2. 业务处理。MessagesItemProcessor -->
+    <!--<beans:bean id="messageProcessor" class="org.springframework.batch.sample.MessagesItemProcessor"/>-->
+
+    <!-- 3. 写过程。MessagesItemWriter -->
+    <beans:bean id="messageWriter"
+                class="org.springframework.batch.sample.MessagesItemWriter"/>
+
+    <!-- 4. 任务定义 -->
+    <!-- 4.1 配置 job。 messageJob 包含一个 Step。它需要指定读数据、处理数据、写数据。
+        commit-interval 指定该 step 的事务提交粒度，此处设置为 5 表示每当处理完5读入5条数据时，提交一次事务。
+        chunk-completion-policy 指定了 step 的完成策略，即当什么情况发生时表明该 step 已经完成。不指定使用默认当读入数据为空结束当前 step 的策略。
+    -->
+    <!--
+    <batch:job id="messageJob">
+        <batch:step id="messageStep">
+            <batch:tasklet>
+                <batch:chunk reader="messageReader" processor="messageProcessor" writer="messageWriter" commit-interval="5"  />
+            </batch:tasklet>
+        </batch:step>
+    </batch:job>
+    -->
+
+    <!-- 5. 配置 JobRepository 并为其指定一个事务管理器，该类用于对 Job 进行管理 -->
+    <!-- 10.step flow
+     使用数据库资源。（数据库初始化脚本见 init_db_mysql.sql）
+    JobRepositoryFactoryBean 替换又有的 MapJobRepositoryFactoryBean 进行持久化存储
+        添加 dataSource ，
+        修改 transactionManager
+    -->
+    <beans:bean id="jobRepository" class="org.springframework.batch.core.repository.support.JobRepositoryFactoryBean">
+        <beans:property name="dataSource" ref="dataSource" />
+        <beans:property name="transactionManager" ref="transactionManager" />
+    </beans:bean>
+    <beans:bean id="dataSource"
+                class="org.springframework.jdbc.datasource.DriverManagerDataSource">
+        <beans:property name="driverClassName" value="com.mysql.jdbc.Driver" />
+        <beans:property name="url"
+                        value="jdbc:mysql://localhost:3306/batch" />
+        <beans:property name="username" value="root" />
+        <beans:property name="password" value="" />
+    </beans:bean>
+    <!--<beans:bean id="transactionManager" class="org.springframework.batch.support.transaction.ResourcelessTransactionManager"/>-->
+    <beans:bean id="transactionManager"
+                class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+        <beans:property name="dataSource" ref="dataSource" />
+    </beans:bean>
+
+    <!-- 11. 配置数据源，指定你所使用的数据库 Url, driverClass, uname, pwd, schema.script  -->
+
+
+
+
+    <!-- 6. 执行。 请参见 Main.class -->
+
+    <!-- 8. 任务重试 -->
+    <!--
+    既然相同参数的任务只能成功执行一次，那么，如果任务失败该如何处理？此时，需要考虑的是，既然任务步骤有事务提交粒度，
+    那么可能任务已经提交了部分处理结果，这部分不应该被重复处理。也就是说，此时应该有重试操作。
+    在 Spring Batch 中，通过配置可以实现步骤 Step 的重试，如下所示：
+    请先注释  4.1 配置 job。  部分的 bean 配置 。
+    配置 retry-limit="2" 重试 2 次 ；
+    retryable-exception-classes 扑捉错误的异常，以重试。
+    -->
+    <!-- 8.1 messageJob
+
+    <batch:job id="messageJob" restartable="true">
+        <batch:step id="messageStep">
+            <batch:tasklet>
+                <batch:chunk reader="messageReader" processor="messageProcessor" writer="messageWriter" commit-interval="5" retry-limit="2" >
+                    <batch:retryable-exception-classes>
+                        <batch:include class="java.lang.RuntimeException"/>
+                    </batch:retryable-exception-classes>
+                </batch:chunk>
+            </batch:tasklet>
+        </batch:step>
+    </batch:job>
+    -->
+
+    <!-- 9 运行时管理 见 Main.java -->
+
+    <!-- 14. 配置多线程 -->
+    <beans:bean id="taskExecute" class="org.springframework.core.task.SimpleAsyncTaskExecutor"/>
+
+    <!-- 13 配置多 step -->
+    <batch:job id="billingJob" restartable="true">
+        <batch:step id="billingStep" next="payStep">
+            <!--<batch:tasklet task-executor="taskExecute" throttle-limit="5">-->
+            <batch:tasklet>
+                <batch:chunk reader="userDbReader" processor="billingProcessor" writer="billDbWriter" commit-interval="5"/>
+            </batch:tasklet>
+        </batch:step>
+
+        <batch:step id="payStep">
+            <batch:tasklet>
+                <batch:chunk reader="billDbReader" processor="payProcessor" writer="payDbWriter"
+                             commit-interval="5" skip-limit="100" >
+                    <batch:skippable-exception-classes>
+                        <batch:include class="org.springframework.batch.sample.MoneyNotEnoughException" />
+                    </batch:skippable-exception-classes>
+                </batch:chunk>
+            </batch:tasklet>
+            <batch:next on="COMPLETED WITH SKIPS" to="messageStep"/>
+            <batch:listeners>
+                <batch:listener ref="payStepCheckingListener"/>
+            </batch:listeners>
+        </batch:step>
+        <!-- 使用 decision 时需要设置 <batch:step id="payStep" next="decider"> 去掉 listeners 相关配置
+        <batch:decision id="decider" decider="messagesDecider">
+            <batch:next on="COMPLETED WITH SKIPS" to="messageStep"/>
+            <batch:end on="COMPLETED" />
+        </batch:decision>
+        -->
+        <batch:step id="messageStep">
+            <batch:tasklet>
+                <batch:chunk reader="billArrearsDbReader" processor="messageProcessor" writer="messageDbWriter" commit-interval="5"/>
+            </batch:tasklet>
+        </batch:step>
+    </batch:job>
+
+
+    <!-- 12. 配置 db reader, mapper, writer 从数据库中读取数据行-->
+    <!-- processors -->
+    <beans:bean id="billingProcessor"
+                class="org.springframework.batch.sample.BillingItemProcessor"/>
+    <beans:bean id="payProcessor"
+                class="org.springframework.batch.sample.PaymentItemProcessor"/>
+    <beans:bean id="messageProcessor"
+                class="org.springframework.batch.sample.ArrearsMessagesItemProcessor"/>
+
+    <!-- readers -->
+    <beans:bean id="userDbReader"
+                class="org.springframework.batch.item.database.JdbcPagingItemReader">
+        <beans:property name="dataSource" ref="dataSource" />
+        <beans:property name="rowMapper" ref="userDbMapper" />
+        <beans:property name="queryProvider" ref="userQueryProvider" />
+    </beans:bean>
+
+    <beans:bean id="userDbMapper"
+                class="org.springframework.batch.sample.UserDbMapper" />
+
+    <beans:bean id="userQueryProvider"
+                class="org.springframework.batch.item.database.support.MySqlPagingQueryProvider">
+        <beans:property name="selectClause" value="u.id,u.name,u.age,u.balance" />
+        <beans:property name="fromClause" value="users u" />
+        <beans:property name="sortKeys">
+            <beans:map>
+                <beans:entry key="u.id" value="ASCENDING"/>
+            </beans:map>
+        </beans:property>
+    </beans:bean>
+
+    <beans:bean id="billDbReader"
+                class="org.springframework.batch.item.database.JdbcPagingItemReader">
+        <beans:property name="dataSource" ref="dataSource" />
+        <beans:property name="rowMapper" ref="billDbMapper" />
+        <beans:property name="queryProvider" ref="billQueryProvider" />
+    </beans:bean>
+
+    <beans:bean id="billDbMapper"
+                class="org.springframework.batch.sample.BillDbMapper" />
+
+    <beans:bean id="billQueryProvider"
+                class="org.springframework.batch.item.database.support.MySqlPagingQueryProvider">
+        <beans:property name="selectClause"
+                        value="b.id,b.user_id,b.fees,b.paid_fees,b.unpaid_fees,b.pay_status,u.name,u.age,u.balance" />
+        <beans:property name="fromClause" value="users u,bills b" />
+        <beans:property name="whereClause" value="b.user_id=u.id" />
+        <beans:property name="sortKeys">
+            <beans:map>
+                <beans:entry key="b.id" value="ASCENDING"/>
+            </beans:map>
+        </beans:property>
+    </beans:bean>
+
+    <beans:bean id="billArrearsDbReader"
+                class="org.springframework.batch.item.database.JdbcPagingItemReader">
+        <beans:property name="dataSource" ref="dataSource" />
+        <beans:property name="rowMapper" ref="billDbMapper" />
+        <beans:property name="queryProvider" ref="billArrearsQueryProvider" />
+    </beans:bean>
+
+    <beans:bean id="billArrearsQueryProvider"
+                class="org.springframework.batch.item.database.support.MySqlPagingQueryProvider">
+        <beans:property name="selectClause"
+                        value="b.id,b.user_id,b.fees,b.paid_fees,b.unpaid_fees,b.pay_status,u.name,u.age,u.balance" />
+        <beans:property name="fromClause" value="users u,bills b" />
+        <beans:property name="whereClause"
+                        value="b.user_id=u.id and b.pay_status=0" />
+        <beans:property name="sortKeys">
+            <beans:map>
+                <beans:entry key="b.id" value="ASCENDING"/>
+            </beans:map>
+        </beans:property>
+    </beans:bean>
+
+    <!-- writers -->
+    <beans:bean id="messageDbWriter"
+                class="org.springframework.batch.item.database.JdbcBatchItemWriter">
+        <beans:property name="dataSource" ref="dataSource" />
+        <beans:property name="sql"
+                        value="insert into messages(id,user_id,content) values(:id,:user.id,:content)" />
+        <beans:property name="itemSqlParameterSourceProvider"
+                        ref="itemSqlParameterSourceProvider" />
+    </beans:bean>
+
+    <beans:bean id="billDbWriter"
+                class="org.springframework.batch.item.database.JdbcBatchItemWriter">
+        <beans:property name="dataSource" ref="dataSource" />
+        <beans:property name="sql"
+                        value="insert into bills(id,user_id,fees,paid_fees,unpaid_fees,pay_status) values(:id,:user.id,:fees,:paidFees,:unpaidFees,:payStatus)" />
+        <beans:property name="itemSqlParameterSourceProvider"
+                        ref="itemSqlParameterSourceProvider" />
+    </beans:bean>
+
+    <beans:bean id="payDbWriter"
+                class="org.springframework.batch.item.support.CompositeItemWriter">
+        <beans:property name="delegates">
+            <beans:list>
+                <beans:ref bean="payRecordDbWriter" />
+                <beans:ref bean="payBillsDbUpdateWriter" />
+                <beans:ref bean="payUsersDbUpdateWriter" />
+            </beans:list>
+        </beans:property>
+    </beans:bean>
+
+    <beans:bean id="payBillsDbUpdateWriter"
+                class="org.springframework.batch.item.database.JdbcBatchItemWriter">
+        <beans:property name="dataSource" ref="dataSource" />
+        <beans:property name="sql"
+                        value="update bills b set b.paid_fees=:bill.paidFees,b.unpaid_fees=:bill.unpaidFees,b.pay_status=:bill.payStatus where b.id=:bill.id" />
+        <beans:property name="itemSqlParameterSourceProvider"
+                        ref="itemSqlParameterSourceProvider" />
+    </beans:bean>
+
+    <beans:bean id="payUsersDbUpdateWriter"
+                class="org.springframework.batch.item.database.JdbcBatchItemWriter">
+        <beans:property name="dataSource" ref="dataSource" />
+        <beans:property name="sql"
+                        value="update users u set u.balance=:bill.user.balance where u.id=:bill.user.id" />
+        <beans:property name="itemSqlParameterSourceProvider"
+                        ref="itemSqlParameterSourceProvider" />
+    </beans:bean>
+
+    <beans:bean id="payRecordDbWriter"
+                class="org.springframework.batch.item.database.JdbcBatchItemWriter">
+        <beans:property name="dataSource" ref="dataSource" />
+        <beans:property name="sql"
+                        value="insert into payrecords(id,bill_id,paid_fees) values(:id,:bill.id,:paidFees)" />
+        <beans:property name="itemSqlParameterSourceProvider"
+                        ref="itemSqlParameterSourceProvider" />
+    </beans:bean>
+
+    <beans:bean id="itemSqlParameterSourceProvider"
+                class="org.springframework.batch.item.database.BeanPropertyItemSqlParameterSourceProvider" />
+
+    <!-- Listener -->
+    <beans:bean id="payStepCheckingListener"
+                class="org.springframework.batch.sample.PayStepCheckingListener">
+    </beans:bean>
+    <!-- messagesDecider -->
+    <beans:bean id="messagesDecider" class="org.springframework.batch.sample.MessagesDecider" />
+
+
+
+</beans:beans>

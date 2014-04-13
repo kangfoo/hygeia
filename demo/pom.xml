@@ -19,5 +19,6 @@
 
     <module>springbatch.test</module>
     <module>SpringBatchExample</module>
+        <module>spring-batch-samples</module>
   </modules>
 </project>

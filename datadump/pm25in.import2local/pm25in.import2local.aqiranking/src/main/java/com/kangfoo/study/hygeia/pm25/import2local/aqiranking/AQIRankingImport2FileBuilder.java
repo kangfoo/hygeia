@@ -35,12 +35,12 @@ public class AQIRankingImport2FileBuilder extends RouteBuilder {
 
         from(quartz2)
                 .setHeader(Exchange.HTTP_METHOD, constant(HttpMethods.GET))
-                .setHeader(Exchange.HTTP_QUERY, constant(constant("token="+pm25Token+"&city=zhuhai")))
+                .setHeader(Exchange.HTTP_QUERY, constant(pm25Token))
                 .to(this.getHttpURL()) // http4
-                .convertBodyTo(String.class)  // 字节流转 string 要优化。
+                .convertBodyTo(String.class)  // 字节流转 string 要优化(不添加次转换启动运行明显缓慢)。 参见 https://camel.apache.org/type-converter.html
                 .setHeader(Exchange.FILE_NAME, SimpleBuilder.simple(fileNameGenerator.generateFileName(flag)))
                 .log("获取API")
-                .to("file://target/" + File.separator + flag + File.separator + fileNameGenerator.generateDirNameByTime())
+                .to("file://target/" + flag + File.separator + fileNameGenerator.generateDirNameByTime())
         ;
 
     }

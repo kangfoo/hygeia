@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<blueprint xmlns="http://www.osgi.org/xmlns/blueprint/v1.0.0"
+           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xmlns:cm="http://aries.apache.org/blueprint/xmlns/blueprint-cm/v1.0.0"
+           xsi:schemaLocation="http://www.osgi.org/xmlns/blueprint/v1.0.0 http://www.osgi.org/xmlns/blueprint/v1.0.0/blueprint.xsd">
+
+
+    <!--使用  configuration admin 管理。 blueprint 属性读取使用 ${property.key} 语法， camel 属性读取使用 {{property.key}} 语法-->
+    <cm:property-placeholder persistent-id="com.kangfoo.study.hygeia">
+        <cm:default-properties>
+            <cm:property name="common.pm25Token" value="token=5j1znBVAsnSf5xQyNQyq"/>
+            <cm:property name="AllCitiesImport2File.httpURL" value="http4://www.pm25.in/api/querys/all_cities.json"/>
+            <cm:property name="AllCitiesImport2File.flag" value="allCities"/>
+            <cm:property name="AllCitiesImport2File.quartz2"
+                         value="quartz2://allCities_groupName/timerName?cron=0/6+*+*+?+*+*"/>
+        </cm:default-properties>
+    </cm:property-placeholder>
+
+    <!--
+     from(quartz2)
+     .setHeader(Exchange.HTTP_METHOD, constant(HttpMethods.GET))
+     .setHeader(Exchange.HTTP_QUERY, constant(constant("token="+pm25Token)))
+     .to(this.getHttpURL()) // http4
+     .convertBodyTo(String.class)  // 字节流转 string 要优化(不添加次转换启动运行明显缓慢)。 参见 https://camel.apache.org/type-converter.html
+     .setHeader(Exchange.FILE_NAME, SimpleBuilder.simple(fileNameGenerator.generateFileName(flag)))
+     .log("获取API")
+     .to("file://target/" + File.separator + flag + File.separator + fileNameGenerator.generateDirNameByTime())
+     ;
+     -->
+
+    <camelContext id="blueprintContext" trace="false" xmlns="http://camel.apache.org/schema/blueprint">
+        <route id="AllCitiesImport2FileRoute">
+            <from uri="{{AllCitiesImport2File.quartz2}}"/>
+            <setHeader headerName="CamelHttpMethod">
+                <constant>GET</constant>
+            </setHeader>
+            <setHeader headerName="CamelHttpQuery">
+                <constant>{{common.pm25Token}}</constant>
+            </setHeader>
+            <to uri="{{AllCitiesImport2File.httpURL}}"/>
+            <convertBodyTo type="java.lang.String"/>
+            <setHeader headerName="CamelFileName">
+                <simple>${date:now:yyyyMMdd}/{{AllCitiesImport2File.flag}}-${date:now:yyyyMMddHHmmss}.log</simple>
+            </setHeader>
+            <log message="获取 All Cities AQI"/>
+            <to uri="file://target/{{AllCitiesImport2File.flag}}"/>
+        </route>
+    </camelContext>
+
+</blueprint>

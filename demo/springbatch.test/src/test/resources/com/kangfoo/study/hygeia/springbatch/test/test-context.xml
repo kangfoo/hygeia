@@ -16,9 +16,15 @@
     <context:property-placeholder location="classpath:/com/kangfoo/study/hygeia/springbatch/test/test-context.properties"
                                   ignore-unresolvable="true"/>
 
-    <jdbc:initialize-database data-source="dataSource">
+    <jdbc:initialize-database data-source="dataSource" enabled="false">
         <jdbc:script location="${schema.script}"/>
     </jdbc:initialize-database>
+
+    <!--
+    <jdbc:initialize-database data-source="dataSource" enabled="false">
+        <jdbc:script location="${batch.schema.script}" />
+    </jdbc:initialize-database>
+    -->
 
     <batch:job-repository id="jobRepository"/>
 
@@ -30,6 +36,7 @@
 
     <beans:bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager"
                 p:dataSource-ref="dataSource"/>
+
 
     <beans:bean id="jobLauncher" class="org.springframework.batch.core.launch.support.SimpleJobLauncher"
                 p:jobRepository-ref="jobRepository"/>

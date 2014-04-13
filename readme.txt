@@ -71,3 +71,28 @@ http://thinkinside.tk/pages/tags.html#OSGi-ref
 
 9. HTML字符实体（Character Entities），转义字符串（Escape Sequence）
 http://114.xixik.com/character/
+
+10. properties
+参见 http://camel.apache.org/properties.html
+camel 读取配置使用语法 {{key}}
+spring/blueprint 读取配置使用语法 ${key}
+特殊提醒：${} 有动态表达式的意义。
+
+11. pm2.5 数据主要来自于
+http://www.pm25.in/api_doc
+
+12. 项目管理工具
+trello  维基百科
+Trello 是由Fog Creek Software开发的一款免费的基于网络应用程序 项目管理应用。
+Trello使用1980年代流行的丰田供应链管理方式看板管理作为管理项目的样式。
+
+Teambition
+https://www.teambition.com/projects
+http://today.ai/past
+teambition是一款高效、易用、优雅的协作化项目管理工具，它能帮你随时把握项目动态，高效地管理项目任务，以及方便地分享和存档项目文件。
+在teambition中你可以创建多个项目，并邀请你的同事或是朋友来协同工作。
+
+支持国内90后创业小伙的 teambition
+我的 hygeia 就建在
+https://www.teambition.com/project/534a4899a5d1044d378afd8a/home
+下。

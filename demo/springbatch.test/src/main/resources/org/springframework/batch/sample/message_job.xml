@@ -51,15 +51,17 @@
         commit-interval 指定该 step 的事务提交粒度，此处设置为 5 表示每当处理完5读入5条数据时，提交一次事务。
         chunk-completion-policy 指定了 step 的完成策略，即当什么情况发生时表明该 step 已经完成。不指定使用默认当读入数据为空结束当前 step 的策略。
     -->
+    <!--
     <batch:job id="messageJob">
         <batch:step id="messageStep">
             <batch:tasklet>
-                <batch:chunk reader="messageReader" processor="messageProcessor" writer="messageWriter" commit-interval="5"  /> <!-- chunk-completion-policy="" -->
+                <batch:chunk reader="messageReader" processor="messageProcessor" writer="messageWriter" commit-interval="5"  />
             </batch:tasklet>
         </batch:step>
     </batch:job>
+    -->
 
-    <!-- 5. 配置 JobRepository 并为其指定一个事务管理器，该类用于对 Job 进行管理 -->
+    <!-- 5. 配置 JobRepository 并为其指定一个事务管理器，该类用于对 Job 进行管理。MapJobRepositoryFactoryBean 仅用于测试。 -->
     <beans:bean id="jobRepository" class="org.springframework.batch.core.repository.support.MapJobRepositoryFactoryBean">
         <beans:property name="transactionManager" ref="transactionManager" />
     </beans:bean>
@@ -67,6 +69,28 @@
 
     <!-- 6. 执行。 请参见 Main.class -->
 
-    <!-- 7.  -->
+    <!-- 8. 任务重试 -->
+    <!--
+    既然相同参数的任务只能成功执行一次，那么，如果任务失败该如何处理？此时，需要考虑的是，既然任务步骤有事务提交粒度，
+    那么可能任务已经提交了部分处理结果，这部分不应该被重复处理。也就是说，此时应该有重试操作。
+    在 Spring Batch 中，通过配置可以实现步骤 Step 的重试，如下所示：
+    请先注释  4.1 配置 job。  部分的 bean 配置 。
+    配置 retry-limit="2" 重试 2 次 ；
+    retryable-exception-classes 扑捉错误的异常，以重试。
+    -->
+    <!-- 8.1 messageJob-->
+    <batch:job id="messageJob" restartable="true">
+        <batch:step id="messageStep">
+            <batch:tasklet>
+                <batch:chunk reader="messageReader" processor="messageProcessor" writer="messageWriter" commit-interval="5" retry-limit="2" >
+                    <batch:retryable-exception-classes>
+                        <batch:include class="java.lang.RuntimeException"/>
+                    </batch:retryable-exception-classes>
+                </batch:chunk>
+            </batch:tasklet>
+        </batch:step>
+    </batch:job>
+
+    <!-- 9 运行时管理 见 Main.java -->
 
 </beans:beans>

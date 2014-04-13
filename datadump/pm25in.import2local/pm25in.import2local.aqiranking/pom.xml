@@ -58,6 +58,7 @@
             <version>1.0.0</version>
             <scope>provided</scope>
         </dependency>
+        <!-- end 开发时为了编译器的自动补齐等功能 -->
 
         <dependency>
             <groupId>org.apache.camel</groupId>
@@ -68,6 +69,12 @@
             <artifactId>camel-http4</artifactId>
         </dependency>
 
+        <!-- dependency -->
+        <dependency>
+            <groupId>com.kangfoo.study.hygeia</groupId>
+            <artifactId>utils.common</artifactId>
+            <version>${project.version}</version>
+        </dependency>
 
         <!-- logging -->
         <dependency>
@@ -91,12 +98,6 @@
             <version>1.2.17</version>
         </dependency>
 
-        <!-- dependency -->
-        <dependency>
-            <groupId>com.kangfoo.study.hygeia</groupId>
-            <artifactId>utils.common</artifactId>
-            <version>${project.version}</version>
-        </dependency>
 
         <!-- testing -->
         <dependency>
