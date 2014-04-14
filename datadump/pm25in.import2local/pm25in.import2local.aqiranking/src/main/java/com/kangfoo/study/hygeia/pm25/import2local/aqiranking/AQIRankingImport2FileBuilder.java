@@ -1,16 +1,9 @@
 package com.kangfoo.study.hygeia.pm25.import2local.aqiranking;
 
-import com.kangfoo.study.hygeia.utils.common.FileNameGenerator;
-import com.kangfoo.study.hygeia.utils.common.impl.FileNameGeneratorImpl;
 import org.apache.camel.Exchange;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.builder.SimpleBuilder;
 import org.apache.camel.component.http4.HttpMethods;
-import org.apache.camel.language.bean.BeanLanguage;
-import org.apache.camel.language.property.PropertyLanguage;
-import org.apache.camel.language.simple.SimpleLanguage;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.File;
 

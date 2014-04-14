@@ -1,15 +1,6 @@
 package com.kangfoo.study.hygeia.weather.import2local.weather;
 
-import com.kangfoo.study.hygeia.utils.common.FileNameGenerator;
-import org.apache.camel.Exchange;
 import org.apache.camel.builder.RouteBuilder;
-import org.apache.camel.builder.SimpleBuilder;
-import org.apache.camel.component.http4.HttpMethods;
-import org.apache.commons.lang.StringUtils;
-
-import java.io.File;
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * Created with IntelliJ IDEA.

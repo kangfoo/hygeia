@@ -22,7 +22,7 @@ import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 
 /**
- * Plain java class to be used for filename generation based on the reported incident
+ *  class [FileNameGeneratorImpl] is public, should be declared in a file named [FileNameGeneratorImpl].java
  */
 public class FileNameGeneratorImpl implements FileNameGenerator {
 

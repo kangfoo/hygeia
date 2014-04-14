@@ -5,7 +5,7 @@ package com.kangfoo.study.hygeia.utils.common;
  * User: kangfoo-mac
  * Date: 14-4-5
  * Time: 下午11:56
- * To change this template use File | Settings | File Templates.
+ * class [FileNameGenerator] is public, should be declared in a file named [FileNameGenerator].java
  */
 public interface FileNameGenerator {
 

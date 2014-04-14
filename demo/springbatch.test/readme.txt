@@ -43,3 +43,4 @@ com.mysql.jdbc.exceptions.jdbc4.MySQLSyntaxErrorException: Table 'batch_job_inst
 参见：
 http://stackoverflow.com/questions/16816116/using-2-different-datasources-spring-batch
 
+
